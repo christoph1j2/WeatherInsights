@@ -16,6 +16,9 @@ namespace LeuzeWeather.Models
 
         [JsonPropertyName("temperature_2m_min")]
         public double[]? TempMinArr { get; set; }
+
+        [JsonPropertyName("weather_code")]
+        public int[]? WeatherCode { get; set; }
     }
 
     /// <summary>
@@ -35,6 +38,9 @@ namespace LeuzeWeather.Models
 
         [JsonPropertyName("wind_speed_10m")]
         public double WindSpeed { get; set; }
+
+        [JsonPropertyName("weather_code")]
+        public int WeatherCode { get; set; }
     }
 
     /// <summary>

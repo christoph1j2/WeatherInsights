@@ -1,0 +1,25 @@
+﻿@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <header>
+        <h1>WeatherInsights</h1>
+    </header>
+
+    <div class="content">
+        @Body
+    </div>
+
+    <footer class="mt-4">
+        <small>&copy; WeatherInsights</small>
+    </footer>
+</div>

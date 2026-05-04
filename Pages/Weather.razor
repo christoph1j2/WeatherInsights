@@ -1,0 +1,83 @@
+﻿@page "/weather"
+@inject WeatherService WeatherService
+
+@if (forecastResults != null)
+{
+	// Current weather
+	<MudCard Class="h-64 w-64 border-2">
+		<MudCardHeader>
+			<div class="mr-4 flex-col text-center">
+				<MudText Typo="Typo.h6">
+					@forecastResults.ForecastCurrent.Temp °C 
+				</MudText>
+				<MudText Typo="Typo.subtitle2">
+					@forecastResults.ForecastDaily.TempMaxArr[0] °C / @forecastResults.ForecastDaily.TempMinArr[0] °C
+				</MudText>
+			</div>
+				<MudText Typo="Typo.h6">
+					@City, @Country
+				</MudText>
+		</MudCardHeader>
+		<MudCardContent>
+			<MudText>Humidity: @forecastResults.ForecastCurrent.Humidity</MudText>
+			<MudText>Wind Speed: @forecastResults.ForecastCurrent.WindSpeed</MudText>
+		</MudCardContent>
+	</MudCard>
+
+	<div class="flex">
+		@for (int i = 1; i < 4; i++)
+		{
+		<MudCard Class="border-1">
+				<MudText>@forecastResults.ForecastDaily.DateArr[i]</MudText>
+				<MudText>@forecastResults.ForecastDaily.TempMaxArr[i]</MudText>
+				<MudText>@forecastResults.ForecastDaily.TempMinArr[i]</MudText>
+		</MudCard>
+		}
+
+	</div>
+}
+
+
+@code {
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "lat")]
+	public double Latitude { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "lon")]
+	public double Longitude { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "city")]
+	public string? City { get; set; }
+
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "country")]
+	public string? Country { get; set; }
+
+	ForecastResultWrapper? forecastResults;
+	string? errorMessage;
+
+	/// <summary>
+	///		Handle for the OnInitializedAsync method, 
+	///		which fetches the weather data for the specified coordinates and 
+	///		handles any errors that may occur during the fetch.
+	/// </summary>
+	/// <returns>A wrapper of today's weather and weather for the next 3 days.</returns>
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			forecastResults = await WeatherService.GetWeatherAsync(Latitude, Longitude);
+            
+			if (forecastResults == null)
+			{
+				errorMessage = "Weather data not found for the specified location.";
+			}
+		}
+		catch (Exception ex)
+		{
+			errorMessage = $"Error while fetching weather data: {ex.Message}";
+		}
+	}
+}

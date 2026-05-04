@@ -1,0 +1,81 @@
+﻿@page "/"
+@inject GeocodingService GeocodingService
+@inject WeatherService WeatherService
+@inject NavigationManager NavigationManager
+
+<PageTitle>WeatherInsights</PageTitle>
+
+@if(!string.IsNullOrEmpty(errorMessage)){
+	<MudAlert Severity="Severity.Error" Variant="Variant.Filled" Elevation="0">
+		@errorMessage
+	</MudAlert>
+}
+
+<MudGrid>
+	<MudItem xs="12">
+		<MudAutocomplete 
+			T="GeocodingResult"
+			Label="Input City"
+			HelperText="Search for a city..."
+			HelperTextOnFocus="true"
+			DebounceInterval="500"
+			MinCharacters="3"
+			ShowProgressIndicator="@isLoading"
+
+			SearchFunc="@HandleGeoSearchAsync"
+			ToStringFunc="@(r => r == null ? null : $"{r.Name} - {r.Country}")"
+
+			ValueChanged="@HandleRoute"
+			/>
+	</MudItem>
+</MudGrid>
+
+
+@code {
+	List<GeocodingResult>? citySuggestions;
+	bool isLoading;
+	string? errorMessage;
+
+	/// <summary>
+	/// Handles the async Geocode city fetch according to the city input.
+	/// </summary>
+	/// <returns>An IEnumerable for the MudAutocomplete</returns>
+	private async Task<IEnumerable<GeocodingResult>> HandleGeoSearchAsync(string text, CancellationToken t)
+	{
+		isLoading = true;
+		try
+		{
+			citySuggestions = await GeocodingService.GetCityAsync(text);
+			if (citySuggestions == null)
+			{
+				errorMessage = $"City '{text}' not found.";
+				return Enumerable.Empty<GeocodingResult>();
+			}
+			else
+			{
+				return citySuggestions;
+			}
+		} 
+		catch (Exception ex)
+		{
+			errorMessage = $"Error while fetching geocoding data: {ex.Message}";
+			return Enumerable.Empty<GeocodingResult>();
+		}
+		finally
+		{
+			isLoading = false;
+		}
+	}
+
+	/// <summary>
+	/// Handle for the MudAutocomplete ValueChanged event, which navigates to the Weather page with the selected city's coordinates and name as query parameters.
+	/// </summary>
+	/// <param name="selectedCity">The city clicked on in the dropdown</param>
+	private void HandleRoute(GeocodingResult? selectedCity)
+	{
+		if (selectedCity != null)
+		{
+			NavigationManager.NavigateTo($"/weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}");
+		}
+	}
+}

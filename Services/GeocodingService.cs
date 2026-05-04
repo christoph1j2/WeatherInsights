@@ -25,13 +25,13 @@ namespace LeuzeWeather.Services
         /// </summary>
         /// <param name="name">Name of the city</param>
         /// <returns>Returns the first result if not empty nor null.</returns>
-        public async Task<GeocodingResult?> GetCityAsync(string name)
+        public async Task<List<GeocodingResult>?> GetCityAsync(string name)
         {
             string url = $"v1/search?name={name}&count=5";
             var wrapper = await _api.GetFromJsonAsync<GeocodingResultWrapper>(url);
             if (wrapper != null && wrapper.Results != null && wrapper.Results.Count > 0)
             {
-                return wrapper.Results[0];
+                return wrapper.Results;
             }
             else return null;
         }
