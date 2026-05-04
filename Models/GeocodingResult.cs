@@ -1,4 +1,6 @@
-﻿namespace LeuzeWeather.Models
+﻿using System.Text.Json.Serialization;
+
+namespace LeuzeWeather.Models
 {
     /// <summary>
     /// Model class for the Geocoding API result from 
@@ -6,11 +8,16 @@
     /// </summary>
     public class GeocodingResult
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
+
         public double Latitude { get; set; }
+        
         public double Longitude { get; set; }
-        public string Country { get; set; }
-        public string Region { get; set; }
+        
+        public string? Country { get; set; }
+        
+        [JsonPropertyName("admin1")] // the JSON returns admin1, we name it Region
+        public string? Region { get; set; }
     }
 
     /// <summary>
@@ -18,6 +25,6 @@
     /// </summary>
     public class GeocodingResultWrapper
     {
-        public List<GeocodingResult> results { get; set; }
+        public List<GeocodingResult>? Results { get; set; }
     }
 }
