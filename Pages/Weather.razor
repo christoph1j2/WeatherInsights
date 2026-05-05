@@ -1,5 +1,7 @@
 ﻿@page "/weather"
 @inject WeatherService WeatherService
+@inject ComfortServiceCurrent ComfortServiceCurrent
+@inject ComfortServiceForecast ComfortServiceForecast
 
 @if (forecastResults != null)
 {
@@ -8,7 +10,7 @@
 		<MudCardHeader>
 			<div class="mr-4 flex-col text-center">
 				<MudText Typo="Typo.h6">
-					@forecastResults.ForecastCurrent.Temp °C 
+					@forecastResults.ForecastCurrent.Temp °C | @ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
 				</MudText>
 				<MudText Typo="Typo.subtitle2">
 					@forecastResults.ForecastDaily.TempMaxArr[0] °C / @forecastResults.ForecastDaily.TempMinArr[0] °C
@@ -27,10 +29,12 @@
 	<div class="flex">
 		@for (int i = 1; i < 4; i++)
 		{
-		<MudCard Class="border-1">
-				<MudText>@forecastResults.ForecastDaily.DateArr[i]</MudText>
-				<MudText>@forecastResults.ForecastDaily.TempMaxArr[i]</MudText>
-				<MudText>@forecastResults.ForecastDaily.TempMinArr[i]</MudText>
+			int index = i; // Capture the current value of i for use in the lambda expression
+			<MudCard Class="border-1">
+				<MudText>@forecastResults.ForecastDaily.DateArr[index]</MudText>
+				<MudText>@ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily,index)</MudText>
+				<MudText>@forecastResults.ForecastDaily.TempMaxArr[index]</MudText>
+				<MudText>@forecastResults.ForecastDaily.TempMinArr[index]</MudText>
 		</MudCard>
 		}
 
@@ -69,6 +73,8 @@
 		try
 		{
 			forecastResults = await WeatherService.GetWeatherAsync(Latitude, Longitude);
+			Console.WriteLine($"Array length: {forecastResults?.ForecastDaily?.TempMaxArr?.Length}");
+
             
 			if (forecastResults == null)
 			{

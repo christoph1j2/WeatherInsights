@@ -28,7 +28,7 @@ namespace LeuzeWeather.Services
         /// <returns>Returns current weather and forecast for next 3 days.</returns>
         public async Task<ForecastResultWrapper?> GetWeatherAsync(double lat, double lon)
         {
-            string url = $"v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
+            string url = $"v1/forecast?latitude={lat.ToString(System.Globalization.CultureInfo.InvariantCulture)}&longitude={lon.ToString(System.Globalization.CultureInfo.InvariantCulture)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
             var wrapper = await _api.GetFromJsonAsync<ForecastResultWrapper>(url);
             if (wrapper != null
                 &&

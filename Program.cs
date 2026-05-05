@@ -21,4 +21,7 @@ builder.Services.AddHttpClient<WeatherService>(client =>
     client.BaseAddress = new Uri("https://api.open-meteo.com/");
 });
 
+builder.Services.AddScoped<ComfortServiceCurrent>();
+builder.Services.AddScoped<ComfortServiceForecast>();
+
 await builder.Build().RunAsync();
