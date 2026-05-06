@@ -7,29 +7,23 @@
 @if (forecastResults != null)
 {
 	// Current weather
-	<MudPaper Class="border-1 mx-10 mb-20">
-	<MudCard>
-		<MudCardHeader>
-			<div class="mr-4 flex-col text-center">
-				<MudText Typo="Typo.h6">
-					@forecastResults.ForecastCurrent.Temp °C | @WeatherCodeHelper.GetDescription(forecastResults.ForecastCurrent.WeatherCode)
+	<MudPaper Class="border-1 pa-4 mx-10 mb-20">
+		<MudStack Spacing="2">
+			<MudText Typo="Typo.h6">
+					@City, @Region, @Country
+			</MudText>
+			<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
+				<MudText Typo="Typo.h4">
+					@WeatherCodeHelper.GetIcon(forecastResults.ForecastCurrent.WeatherCode)
 				</MudText>
-				<MudText Typo="Typo.subtitle1">
-					@ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
+				<MudText Typo="Typo.body2" Color="Color.Secondary">
+					@WeatherCodeHelper.GetDescription(forecastResults.ForecastCurrent.WeatherCode)
 				</MudText>
-				<MudText Typo="Typo.subtitle2">
-					@forecastResults.ForecastDaily.TempMaxArr[0] °C / @forecastResults.ForecastDaily.TempMinArr[0] °C
-				</MudText>
-			</div>
-				<MudText Typo="Typo.h6">
-					@City, @Country
-				</MudText>
-		</MudCardHeader>
-		<MudCardContent>
-			<MudText>Humidity: @forecastResults.ForecastCurrent.Humidity</MudText>
-			<MudText>Wind Speed: @forecastResults.ForecastCurrent.WindSpeed</MudText>
-		</MudCardContent>
-	</MudCard>
+			</MudStack>
+			<MudText Typo="Typo.body2">
+				Comfort Level: @ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
+			</MudText>
+		</MudStack>
 	</MudPaper>
 
 	// Next 3 days weather
@@ -49,7 +43,7 @@
 						</MudText>
 					</MudStack>
 					<MudText Typo="Typo.body2">
-						@ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index)
+						Comfort Level: @ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index)
 					</MudText>
 					<MudText Typo="Typo.body2">
 						<strong>Avg:</strong> @Math.Round((forecastResults.ForecastDaily.TempMaxArr[index] + forecastResults.ForecastDaily.TempMinArr[index]) / 2.0, 2) °C
