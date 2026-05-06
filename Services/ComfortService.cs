@@ -1,5 +1,6 @@
 ﻿
 using LeuzeWeather.Models;
+using MudBlazor;
 
 namespace LeuzeWeather.Services
 {
@@ -63,14 +64,27 @@ namespace LeuzeWeather.Services
             else if (WeatherCode < 50) score += 1;
 
             return score;
-        } 
+        }
+
+        /// <summary>
+        /// Takes a comfort level and returns the corresponding color for display purposes.
+        /// </summary>
+        /// <param name="level">The level used for the mapping</param>
+        /// <returns>A color based on the comfort level</returns>
+        public Color GetComfortColor(COMFORT_LEVEL level) => level switch
+        {
+            COMFORT_LEVEL.Good => Color.Success,
+            COMFORT_LEVEL.Moderate => Color.Warning,
+            COMFORT_LEVEL.Bad => Color.Error,
+            _ => Color.Default
+        };
     }
 
     public class ComfortServiceForecast
     {
         public COMFORT_LEVEL ComputeForForecast(ForecastResultDaily forecastResultDaily, int dayIndex)
         {
-            Console.WriteLine($"dayIndex={dayIndex}, arrLen={forecastResultDaily.TempMaxArr?.Length}");
+            //Console.WriteLine($"dayIndex={dayIndex}, arrLen={forecastResultDaily.TempMaxArr?.Length}");
             double MaxTemperature = forecastResultDaily.TempMaxArr?[dayIndex] ?? 1;
             double MinTemperature = forecastResultDaily.TempMinArr?[dayIndex] ?? 1;
             double AvgTemperature = (MaxTemperature + MinTemperature) / 2;
@@ -90,4 +104,4 @@ namespace LeuzeWeather.Services
             else return COMFORT_LEVEL.Bad;
         }
     }
-}
+    }

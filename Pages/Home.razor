@@ -5,6 +5,10 @@
 
 <PageTitle>WeatherInsights</PageTitle>
 
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-16">
+
+<h1 class="mb-6 text-center" style="font-family:Arial; font-weight:500">WeatherInsights</h1>
+<p style="font-weight:200;" class="text-center">Enter a city name to get started...</p>
 @if(!string.IsNullOrEmpty(errorMessage)){
 	<MudAlert Severity="Severity.Error" Variant="Variant.Filled" Elevation="0">
 		@errorMessage
@@ -31,23 +35,28 @@
 	</MudItem>
 </MudGrid>
 
-<MudSwitch @bind-Value="isCompareMode" Color="Color.Secondary"/>
+<MudSwitch Label="Compare Mode" @bind-Value="isCompareMode" Color="Color.Secondary"/>
 
 @if (isCompareMode)
 {
-	<MudList T="string">
-		@foreach (GeocodingResult city in citiesForCompare)
+		@if (citiesForCompare.Count > 0)
 		{
-			<MudListItem>
-				<MudText>@city.Name, @city.Country</MudText>
-				<MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => CompareDelete(city))"/>
-			</MudListItem>
+
+			<MudList T="string" Class="border-1 mb-5" Style="min-height:96px">
+				@foreach (GeocodingResult city in citiesForCompare)
+				{
+					<MudListItem>
+						<MudText>@city.Name, @city.Country</MudText>
+						<MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => CompareDelete(city))"/>
+					</MudListItem>
+				}
+				</MudList>
 		}
-	</MudList>
-	<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleCompareRoute" Disabled="@(citiesForCompare.Count < 2)">
-		Compare
-	</MudButton>
+		<MudButton Style="width: 50%; margin: 0 auto; display:table" Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleCompareRoute" Disabled="@(citiesForCompare.Count < 2)">
+			Compare
+		</MudButton>
 }
+</MudContainer>
 
 
 
@@ -111,6 +120,8 @@
 				!citiesForCompare.Any(c => c.Name == selectedCity.Name
 										&&
 											c.Country == selectedCity.Country
+										&& 
+											c.Region == selectedCity.Region
 										)
 				) 
 				{ 
@@ -153,6 +164,8 @@
 			c => c.Name == city.Name
 			&&
 			c.Country == city.Country
+			&&
+			c.Region == city.Region
 		);
 	}
 }

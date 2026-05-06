@@ -1,34 +1,65 @@
 ﻿@page "/compare"
 @inject WeatherService WeatherService
 @inject ComfortServiceCurrent ComfortServiceCurrent
+@inject NavigationManager NavigationManager
 
-<h3>Compare</h3>
 
-@if (weatherData != null)
+<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Default" OnClick="@(() => NavigationManager.NavigateTo("/"))" />
+
+
+<h3 style="text-align:center" class="mb-15">Compare</h3>
+
+@if (isLoading)
 {
-	foreach (var c in weatherData)
-	{
-		bool isBest = bestScore == ComfortServiceCurrent.GetScore(c.Current);
-		<MudCard Class="border-1 mx-1">
-			<MudCardHeader>
-				@if (isBest)
-				{
-					<MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Star">BEST</MudChip>
-				}
-				<MudText Typo="Typo.h5">@c.CityName, @c.Region, @c.Country</MudText>
-				<MudText Typo="Typo.h6">&emsp; @WeatherCodeHelper.GetDescription(c.Current.WeatherCode)</MudText>
-			</MudCardHeader>
-			<MudCardContent>
-				<MudText Typo="Typo.subtitle1">&ensp; @c.Current.Temp°C</MudText>
-				<MudText Typo="Typo.subtitle1">&emsp; @ComfortServiceCurrent.ComputeForCurrent(c.Current)</MudText>
-				<MudText Typo="Typo.subtitle2">
-					&emsp; @c.Current.Humidity %
-					&ensp; @c.Current.WindSpeed m/s
-				</MudText>
-			</MudCardContent>
-		</MudCard>
-	}
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-16" Style="display:block;margin:auto" />
 }
+else if (weatherData != null)
+{
+	<div style="display:flex; justify-content: space-around">
+		@foreach (var c in weatherData)
+		{
+			bool isBest = bestScore == ComfortServiceCurrent.GetScore(c.Current);
+			// Current weather
+
+			<MudPaper Class="border-1 pa-4 mx-10 mb-20" Style="width:25vw;">
+				<MudStack Spacing="2">
+					<MudText Typo="Typo.h5">
+						@c.CityName, @c.Region, @c.Country
+					</MudText>
+					<MudStack Row="true" Style="align-items:center">
+						<MudText Typo="Typo.h4">
+							@c.Current.Temp°C
+						</MudText>
+						@if (isBest)
+						{
+							<MudChip T="string" Color="Color.Success" Size="Size.Medium" Icon="@Icons.Material.Filled.Star">BEST</MudChip>
+						}
+					</MudStack>
+					<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
+						<MudText Typo="Typo.h4">
+							@WeatherCodeHelper.GetIcon(c.Current.WeatherCode)
+						</MudText>
+						<MudText Typo="Typo.body2" Color="Color.Secondary">
+							@WeatherCodeHelper.GetDescription(c.Current.WeatherCode)
+						</MudText>
+					</MudStack>
+					<MudChip Style="width: fit-content" T="string" Color="@ComfortServiceCurrent.GetComfortColor(ComfortServiceCurrent.ComputeForCurrent(c.Current))">
+						<strong>Comfort Level:&nbsp;</strong> @ComfortServiceCurrent.ComputeForCurrent(c.Current)
+					</MudChip>
+					<MudText Typo="Typo.body2">
+						<strong>Humidity:</strong> @c.Current.Humidity %
+					</MudText>
+					<MudText Typo="Typo.body2">
+						<strong>Wind Speed:</strong> @c.Current.WindSpeed m/s
+					</MudText>
+				</MudStack>
+			</MudPaper>
+		}
+	</div>
+	}
+
+}
+
 
 @code {
 	[Parameter][SupplyParameterFromQuery(Name = "cities")] public string[]? Cities { get; set; }
@@ -40,12 +71,17 @@
 	List<(string CityName, string Region, string Country, ForecastResultCurrent Current)> weatherData = [];
 
 	private int bestScore = 0;
+	private bool isLoading = true;
 
+	/// <summary>
+	/// Gets the weather data for each city passed as query parameters and computes the comfort score to determine the best weather among them.
+	/// </summary>
+	/// <returns></returns>
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
-			if (Cities?.Length > 0)
+			if (Cities?.Length > 0 && Latitudes?.Length > 0 && Longitudes?.Length > 0 && Countries?.Length > 0 && Regions?.Length>0)
 			{
 				for (int i = 0; i < Cities.Length; i++)
 				{
@@ -60,16 +96,23 @@
 					if (weather?.ForecastCurrent != null)
 					{
 						weatherData.Add((Cities[i], Regions[i], Countries[i], weather.ForecastCurrent));
+
+						int score = ComfortServiceCurrent.GetScore(weather.ForecastCurrent);
+						if (score > bestScore) bestScore = score;
 					}
 
-					int score = ComfortServiceCurrent.GetScore(weather?.ForecastCurrent);
-					if (score > bestScore) bestScore = score;
 				}
 			}
 		}
 		catch (Exception ex)
 		{
-				Console.WriteLine($"Error fetching weather data: {ex.Message}");
+			Console.WriteLine($"Error fetching weather data: {ex.Message}");
+		}
+		finally
+		{
+			isLoading = false;
 		}
 	}
+
+
 }

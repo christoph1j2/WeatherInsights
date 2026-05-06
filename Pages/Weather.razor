@@ -3,14 +3,24 @@
 @inject WeatherService WeatherService
 @inject ComfortServiceCurrent ComfortServiceCurrent
 @inject ComfortServiceForecast ComfortServiceForecast
+@inject NavigationManager NavigationManager
 
-@if (forecastResults != null)
+
+<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/"))" />
+@if (isLoading)
+{
+	<MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-16" Style="display:block;margin:auto" />
+}
+else if (forecastResults?.ForecastCurrent != null && forecastResults?.ForecastDaily != null)
 {
 	// Current weather
-	<MudPaper Class="border-1 pa-4 mx-10 mb-20">
+	<MudPaper Class="border-1 pa-4 mx-10 mb-20" Style="width:60vw; justify-self:center">
 		<MudStack Spacing="2">
-			<MudText Typo="Typo.h6">
+			<MudText Typo="Typo.h5">
 					@City, @Region, @Country
+			</MudText>
+			<MudText Typo="Typo.h4">
+				@forecastResults.ForecastCurrent.Temp°C
 			</MudText>
 			<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
 				<MudText Typo="Typo.h4">
@@ -20,86 +30,97 @@
 					@WeatherCodeHelper.GetDescription(forecastResults.ForecastCurrent.WeatherCode)
 				</MudText>
 			</MudStack>
+			<MudChip Style="width: fit-content" T="string" Color="@ComfortServiceCurrent.GetComfortColor(ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent))">
+				<strong>Comfort Level:&nbsp;</strong> @ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
+			</MudChip>
 			<MudText Typo="Typo.body2">
-				Comfort Level: @ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
+				<strong>Humidity:</strong> @forecastResults.ForecastCurrent.Humidity %
+			</MudText>
+			<MudText Typo="Typo.body2">
+				<strong>Wind Speed:</strong> @forecastResults.ForecastCurrent.WindSpeed m/s
+			</MudText>
+			<MudText Typo="Typo.overline">
+				<strong>Last Update:</strong> @DateLocaleString(forecastResults.ForecastCurrent.Date)
 			</MudText>
 		</MudStack>
 	</MudPaper>
 
 	// Next 3 days weather
-	<div class="d-flex mx-3 gap-4" style="height: 25vh">
+	<div class="d-flex mx-3 gap-4">
 		@for (int i = 1; i < 4; i++)
 		{
 			int index = i;
-			<MudPaper Class="border-1 w-100 pa-4" Elevation="1">
-				<MudStack Spacing="2">
-					<MudText Typo="Typo.h6">@DateLocaleString(forecastResults.ForecastDaily.DateArr[index])</MudText>
-					<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
-						<MudText Typo="Typo.h4">
-							@WeatherCodeHelper.GetIcon(forecastResults.ForecastDaily.WeatherCode[index])
-						</MudText>
-						<MudText Typo="Typo.body2" Color="Color.Secondary">
-							@WeatherCodeHelper.GetDescription(forecastResults.ForecastDaily.WeatherCode[index])
-						</MudText>
-					</MudStack>
-					<MudText Typo="Typo.body2">
-						Comfort Level: @ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index)
-					</MudText>
-					<MudText Typo="Typo.body2">
-						<strong>Avg:</strong> @Math.Round((forecastResults.ForecastDaily.TempMaxArr[index] + forecastResults.ForecastDaily.TempMinArr[index]) / 2.0, 2) °C
-					</MudText>
-					<MudStack Row="true" Spacing="1" Class="mt-2">
+			if (forecastResults.ForecastDaily.DateArr?.Length > index && forecastResults.ForecastDaily.WeatherCode?.Length > index && forecastResults.ForecastDaily.TempMaxArr?.Length > index && forecastResults.ForecastDaily.TempMinArr?.Length > index)
+			{
+				<MudPaper Class="border-1 w-100 pa-4" Elevation="1">
+					<MudStack Spacing="2">
+						<MudText Typo="Typo.h6">@DateLocaleString(forecastResults.ForecastDaily.DateArr[index])</MudText>
+						<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
+							<MudText Typo="Typo.h4">
+								@WeatherCodeHelper.GetIcon(forecastResults.ForecastDaily.WeatherCode[index])
+							</MudText>
+							<MudText Typo="Typo.body2" Color="Color.Secondary">
+								@WeatherCodeHelper.GetDescription(forecastResults.ForecastDaily.WeatherCode[index])
+							</MudText>
+						</MudStack>
+						<MudChip Style="width: fit-content" T="string" Color="@ComfortServiceCurrent.GetComfortColor(ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index))">
+							<strong>Comfort Level:&nbsp;</strong> @ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index)
+						</MudChip>
 						<MudText Typo="Typo.body2">
-							<strong>Max:</strong> @forecastResults.ForecastDaily.TempMaxArr[index]°C
+							<strong>Avg:</strong> @Math.Round((forecastResults.ForecastDaily.TempMaxArr[index] + forecastResults.ForecastDaily.TempMinArr[index]) / 2.0, 2) °C
 						</MudText>
-						<MudText Typo="Typo.body2">
-							<strong>Min:</strong> @forecastResults.ForecastDaily.TempMinArr[index]°C
-						</MudText>
+						<MudStack Row="true" Spacing="1" Class="mt-2">
+							<MudText Typo="Typo.body2">
+								<strong>Max:</strong> @forecastResults.ForecastDaily.TempMaxArr[index]°C
+							</MudText>
+							<MudText Typo="Typo.body2">
+								<strong>Min:</strong> @forecastResults.ForecastDaily.TempMinArr[index]°C
+							</MudText>
+						</MudStack>
 					</MudStack>
-				</MudStack>
-			</MudPaper>
+				</MudPaper>
+			}
 		}
 	</div>
 }
 
 
 @code {
-		[Parameter]
-		[SupplyParameterFromQuery(Name = "lat")]
-		public double Latitude { get; set; }
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "lat")]
+	public double Latitude { get; set; }
 
-		[Parameter]
-		[SupplyParameterFromQuery(Name = "lon")]
-		public double Longitude { get; set; }
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "lon")]
+	public double Longitude { get; set; }
 
-		[Parameter]
-		[SupplyParameterFromQuery(Name = "city")]
-		public string? City { get; set; }
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "city")]
+	public string? City { get; set; }
 
-		[Parameter]
-		[SupplyParameterFromQuery(Name = "country")]
-		public string? Country { get; set; }
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "country")]
+	public string? Country { get; set; }
 
-		[Parameter]
-		[SupplyParameterFromQuery(Name = "region")]
-		public string? Region { get; set; }
+	[Parameter]
+	[SupplyParameterFromQuery(Name = "region")]
+	public string? Region { get; set; }
 
-		ForecastResultWrapper? forecastResults;
-		string? errorMessage;
+	ForecastResultWrapper? forecastResults;
+	string? errorMessage;
+	bool isLoading = true;
 
 	/// <summary>
-		///		Handle for the OnInitializedAsync method, 
-		///		which fetches the weather data for the specified coordinates and 
-		///		handles any errors that may occur during the fetch.
-		/// </summary>
-		/// <returns>A wrapper of today's weather and weather for the next 3 days.</returns>
+	///		Handle for the OnInitializedAsync method, 
+	///		which fetches the weather data for the specified coordinates and 
+	///		handles any errors that may occur during the fetch.
+	/// </summary>
+	/// <returns>A wrapper of today's weather and weather for the next 3 days.</returns>
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
 			forecastResults = await WeatherService.GetWeatherAsync(Latitude, Longitude, City, Country, Region);
-			Console.WriteLine($"Array length: {forecastResults?.ForecastDaily?.TempMaxArr?.Length}");
-
 
 			if (forecastResults == null)
 			{
@@ -110,15 +131,37 @@
 		{
 			errorMessage = $"Error while fetching weather data: {ex.Message}";
 		}
+		finally
+		{
+			isLoading = false;
+		}
 	}
 
-	private string DateLocaleString(string src)
+	/// <summary>
+	/// Converts a date string from the format used in the weather API to a localized string format 
+	/// </summary>
+	/// <param name="src">Source date</param>
+	/// <returns>Date in the cs-CZ format</returns>
+	private string DateLocaleString(string? src)
 	{
+		if (string.IsNullOrWhiteSpace(src)) return string.Empty;
+
 		CultureInfo srcCult = new CultureInfo("en-US");
 		CultureInfo dstCult = new CultureInfo("cs-CZ");
 
 		DateTime parsed = DateTime.Parse(src, srcCult);
 
-		return parsed.ToString("d", dstCult);
+		DateTime localTime = DateTime.SpecifyKind(parsed, DateTimeKind.Utc).ToLocalTime();
+
+
+		if (src.Contains('T'))
+		{
+			// If the source string contains time, include it in the output format
+			return localTime.ToString("dd/MM/yyyy HH:mm", dstCult);
+		}
+		else
+		{
+			return parsed.ToString("d", dstCult);
+		}
 	}
 }

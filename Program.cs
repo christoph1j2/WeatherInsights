@@ -12,13 +12,29 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddMudServices();
 
 // Add HttpClient services for GeocodingService and WeatherService
-builder.Services.AddHttpClient<GeocodingService>(client =>
+builder.Services.AddHttpClient("GeocodingClient", client =>
 {
     client.BaseAddress = new Uri("https://geocoding-api.open-meteo.com/");
 });
-builder.Services.AddHttpClient<WeatherService>(client =>
+builder.Services.AddHttpClient("WeatherClient", client =>
 {
     client.BaseAddress = new Uri("https://api.open-meteo.com/");
+});
+
+builder.Services.AddSingleton<GeocodingService>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var client = factory.CreateClient("GeocodingClient");
+    client.Timeout = TimeSpan.FromSeconds(10);
+    return new GeocodingService(client);
+});
+
+builder.Services.AddSingleton<WeatherService>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var client = factory.CreateClient("WeatherClient");
+    client.Timeout = TimeSpan.FromSeconds(10);
+    return new WeatherService(client);
 });
 
 builder.Services.AddScoped<ComfortServiceCurrent>();

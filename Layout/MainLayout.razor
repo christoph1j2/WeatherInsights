@@ -1,0 +1,83 @@
+﻿@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <header class="header-brand">
+        <div class="header-content">
+            <h1 class="brand-title">WeatherInsights</h1>
+            <p class="brand-subtitle">Screening Project for Leuze Engineering</p>
+        </div>
+    </header>
+
+    <div class="content mx-5 mb-5">
+        @Body
+    </div>
+
+    <footer class="footer-centered">
+        <small>&copy; WeatherInsights</small>
+    </footer>
+</div>
+
+<style>
+    .main-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: #f7f5f5;
+        background: linear-gradient(1deg,rgba(247, 245, 245, 1) 0%, rgba(226, 0, 26, 0.05) 100%);
+    }
+
+    .header-brand {
+        width: 100vw;
+        background: linear-gradient(135deg, #E2001A 0%, #A00000 100%);
+        color: white;
+        padding: 2rem 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .brand-subtitle {
+        margin: 0.5rem 0 0 0;
+        font-size: 0.95rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+
+    .header-content {
+        max-width: 1200px;
+        padding: 0 2rem;
+    }
+
+    .brand-title {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+
+    .content {
+        flex: 1;
+
+    }
+
+    .footer-centered {
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem 0;
+        background-color: #E2001A;
+        color: white;
+        border-top: 1px solid #A00000;
+    }
+</style>
