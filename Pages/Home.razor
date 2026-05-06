@@ -21,6 +21,7 @@
 			DebounceInterval="500"
 			MinCharacters="3"
 			ShowProgressIndicator="@isLoading"
+			@ref="autocompleteRef"
 
 			SearchFunc="@HandleGeoSearchAsync"
 			ToStringFunc="@(r => r == null ? null : $"{r.Name} - {r.Country}")"
@@ -30,11 +31,35 @@
 	</MudItem>
 </MudGrid>
 
+<MudSwitch @bind-Value="isCompareMode" Color="Color.Secondary"/>
+
+@if (isCompareMode)
+{
+	<MudList T="string">
+		@foreach (GeocodingResult city in citiesForCompare)
+		{
+			<MudListItem>
+				<MudText>@city.Name, @city.Country</MudText>
+				<MudIconButton Icon="@Icons.Material.Filled.Delete" OnClick="@(() => CompareDelete(city))"/>
+			</MudListItem>
+		}
+	</MudList>
+	<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@HandleCompareRoute" Disabled="@(citiesForCompare.Count < 2)">
+		Compare
+	</MudButton>
+}
+
+
 
 @code {
 	List<GeocodingResult>? citySuggestions;
 	bool isLoading;
 	string? errorMessage;
+
+	MudAutocomplete<GeocodingResult>? autocompleteRef;
+
+	bool isCompareMode;
+	List<GeocodingResult> citiesForCompare = new List<GeocodingResult>();
 
 	/// <summary>
 	/// Handles the async Geocode city fetch according to the city input.
@@ -71,11 +96,63 @@
 	/// Handle for the MudAutocomplete ValueChanged event, which navigates to the Weather page with the selected city's coordinates and name as query parameters.
 	/// </summary>
 	/// <param name="selectedCity">The city clicked on in the dropdown</param>
-	private void HandleRoute(GeocodingResult? selectedCity)
+	private async Task HandleRoute(GeocodingResult? selectedCity)
 	{
-		if (selectedCity != null)
+		if (selectedCity == null) return;
+
+		if (!isCompareMode)
 		{
-			NavigationManager.NavigateTo($"/weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}");
+			NavigationManager.NavigateTo($"/weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}");
 		}
+		else
+		{
+			if (citiesForCompare.Count < 3
+				&&
+				!citiesForCompare.Any(c => c.Name == selectedCity.Name
+										&&
+											c.Country == selectedCity.Country
+										)
+				) 
+				{ 
+					citiesForCompare.Add(selectedCity);
+					errorMessage = null; // Clear any previous error message when a city is successfully added to the compare list
+				}
+			else if (citiesForCompare.Count >= 3)
+			{
+				errorMessage = "You can only compare up to 3 cities!";
+			}
+		}
+		await autocompleteRef!.ResetAsync(); // remove the selected value from the input after navigating or adding to compare list
+	}
+
+	/// <summary>
+	/// For compare mode, handle for the Compare button, which navigates to the Compare page with the selected cities' coordinates and names as query parameters.
+	/// </summary>
+	private void HandleCompareRoute()
+	{
+		if (citiesForCompare.Count < 2) return;
+
+		string? cities = string.Join("&cities=", citiesForCompare.Select(c => c.Name));
+		string? countries = string.Join("&countries=", citiesForCompare.Select(c => c.Country));
+		string? regions = string.Join("&regions=", citiesForCompare.Select(c => c.Region));
+		string? lats = string.Join("&lats=", citiesForCompare.Select(c => c.Latitude));
+		string? lons = string.Join("&lons=", citiesForCompare.Select(c => c.Longitude));
+
+		// build the query params for the selected cities (2-3)
+		string query = $"cities={cities}&countries={countries}&regions={regions}&lats={lats}&lons={lons}";
+		NavigationManager.NavigateTo($"/compare?{query}");
+	}
+
+	/// <summary>
+	/// If the user clicks the delete button next to a city in compare mode, this method removes that city from the list of cities to compare.
+	/// </summary>
+	/// <param name="city">Selected city</param>
+	private void CompareDelete(GeocodingResult city)
+	{
+		citiesForCompare.RemoveAll(
+			c => c.Name == city.Name
+			&&
+			c.Country == city.Country
+		);
 	}
 }

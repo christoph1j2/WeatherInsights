@@ -9,6 +9,7 @@ namespace LeuzeWeather.Services
     public class GeocodingService
     {
         private readonly HttpClient _api;
+        private readonly Dictionary<string, GeocodingResultWrapper> _cache; // reduce API calls by caching results for already searched cities
 
         /// <summary>
         /// Class constructor, DI
@@ -17,6 +18,7 @@ namespace LeuzeWeather.Services
         public GeocodingService(HttpClient api)
         {
             this._api = api;
+            this._cache = new Dictionary<string, GeocodingResultWrapper>();
         }
 
         /// <summary>
@@ -27,8 +29,19 @@ namespace LeuzeWeather.Services
         /// <returns>Returns the first result if not empty nor null.</returns>
         public async Task<List<GeocodingResult>?> GetCityAsync(string name)
         {
-            string url = $"v1/search?name={name}&count=5";
-            var wrapper = await _api.GetFromJsonAsync<GeocodingResultWrapper>(url);
+            GeocodingResultWrapper? wrapper;
+
+            if (_cache.ContainsKey(name))
+            {
+                wrapper = _cache.GetValueOrDefault(name);
+            } 
+            else 
+            {
+                string url = $"v1/search?name={name}&count=5";
+                wrapper = await _api.GetFromJsonAsync<GeocodingResultWrapper>(url);
+                if (wrapper != null) _cache.Add(name, wrapper);
+            }
+
             if (wrapper != null && wrapper.Results != null && wrapper.Results.Count > 0)
             {
                 return wrapper.Results;

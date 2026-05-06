@@ -1,4 +1,5 @@
 ﻿@page "/weather"
+@using System.Globalization
 @inject WeatherService WeatherService
 @inject ComfortServiceCurrent ComfortServiceCurrent
 @inject ComfortServiceForecast ComfortServiceForecast
@@ -6,11 +7,15 @@
 @if (forecastResults != null)
 {
 	// Current weather
-	<MudCard Class="h-64 w-64 border-2">
+	<MudPaper Class="border-1 mx-10 mb-20">
+	<MudCard>
 		<MudCardHeader>
 			<div class="mr-4 flex-col text-center">
 				<MudText Typo="Typo.h6">
-					@forecastResults.ForecastCurrent.Temp °C | @ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
+					@forecastResults.ForecastCurrent.Temp °C | @WeatherCodeHelper.GetDescription(forecastResults.ForecastCurrent.WeatherCode)
+				</MudText>
+				<MudText Typo="Typo.subtitle1">
+					@ComfortServiceCurrent.ComputeForCurrent(forecastResults.ForecastCurrent)
 				</MudText>
 				<MudText Typo="Typo.subtitle2">
 					@forecastResults.ForecastDaily.TempMaxArr[0] °C / @forecastResults.ForecastDaily.TempMinArr[0] °C
@@ -25,57 +30,83 @@
 			<MudText>Wind Speed: @forecastResults.ForecastCurrent.WindSpeed</MudText>
 		</MudCardContent>
 	</MudCard>
+	</MudPaper>
 
-	<div class="flex">
+	// Next 3 days weather
+	<div class="d-flex mx-3 gap-4" style="height: 25vh">
 		@for (int i = 1; i < 4; i++)
 		{
-			int index = i; // Capture the current value of i for use in the lambda expression
-			<MudCard Class="border-1">
-				<MudText>@forecastResults.ForecastDaily.DateArr[index]</MudText>
-				<MudText>@ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily,index)</MudText>
-				<MudText>@forecastResults.ForecastDaily.TempMaxArr[index]</MudText>
-				<MudText>@forecastResults.ForecastDaily.TempMinArr[index]</MudText>
-		</MudCard>
+			int index = i;
+			<MudPaper Class="border-1 w-100 pa-4" Elevation="1">
+				<MudStack Spacing="2">
+					<MudText Typo="Typo.h6">@DateLocaleString(forecastResults.ForecastDaily.DateArr[index])</MudText>
+					<MudStack Row="true" Spacing="1" Class="align-items-center mt-2">
+						<MudText Typo="Typo.h4">
+							@WeatherCodeHelper.GetIcon(forecastResults.ForecastDaily.WeatherCode[index])
+						</MudText>
+						<MudText Typo="Typo.body2" Color="Color.Secondary">
+							@WeatherCodeHelper.GetDescription(forecastResults.ForecastDaily.WeatherCode[index])
+						</MudText>
+					</MudStack>
+					<MudText Typo="Typo.body2">
+						@ComfortServiceForecast.ComputeForForecast(forecastResults.ForecastDaily, index)
+					</MudText>
+					<MudText Typo="Typo.body2">
+						<strong>Avg:</strong> @Math.Round((forecastResults.ForecastDaily.TempMaxArr[index] + forecastResults.ForecastDaily.TempMinArr[index]) / 2.0, 2) °C
+					</MudText>
+					<MudStack Row="true" Spacing="1" Class="mt-2">
+						<MudText Typo="Typo.body2">
+							<strong>Max:</strong> @forecastResults.ForecastDaily.TempMaxArr[index]°C
+						</MudText>
+						<MudText Typo="Typo.body2">
+							<strong>Min:</strong> @forecastResults.ForecastDaily.TempMinArr[index]°C
+						</MudText>
+					</MudStack>
+				</MudStack>
+			</MudPaper>
 		}
-
 	</div>
 }
 
 
 @code {
-	[Parameter]
-	[SupplyParameterFromQuery(Name = "lat")]
-	public double Latitude { get; set; }
+		[Parameter]
+		[SupplyParameterFromQuery(Name = "lat")]
+		public double Latitude { get; set; }
 
-	[Parameter]
-	[SupplyParameterFromQuery(Name = "lon")]
-	public double Longitude { get; set; }
+		[Parameter]
+		[SupplyParameterFromQuery(Name = "lon")]
+		public double Longitude { get; set; }
 
-	[Parameter]
-	[SupplyParameterFromQuery(Name = "city")]
-	public string? City { get; set; }
+		[Parameter]
+		[SupplyParameterFromQuery(Name = "city")]
+		public string? City { get; set; }
 
-	[Parameter]
-	[SupplyParameterFromQuery(Name = "country")]
-	public string? Country { get; set; }
+		[Parameter]
+		[SupplyParameterFromQuery(Name = "country")]
+		public string? Country { get; set; }
 
-	ForecastResultWrapper? forecastResults;
-	string? errorMessage;
+		[Parameter]
+		[SupplyParameterFromQuery(Name = "region")]
+		public string? Region { get; set; }
+
+		ForecastResultWrapper? forecastResults;
+		string? errorMessage;
 
 	/// <summary>
-	///		Handle for the OnInitializedAsync method, 
-	///		which fetches the weather data for the specified coordinates and 
-	///		handles any errors that may occur during the fetch.
-	/// </summary>
-	/// <returns>A wrapper of today's weather and weather for the next 3 days.</returns>
+		///		Handle for the OnInitializedAsync method, 
+		///		which fetches the weather data for the specified coordinates and 
+		///		handles any errors that may occur during the fetch.
+		/// </summary>
+		/// <returns>A wrapper of today's weather and weather for the next 3 days.</returns>
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
-			forecastResults = await WeatherService.GetWeatherAsync(Latitude, Longitude);
+			forecastResults = await WeatherService.GetWeatherAsync(Latitude, Longitude, City, Country, Region);
 			Console.WriteLine($"Array length: {forecastResults?.ForecastDaily?.TempMaxArr?.Length}");
 
-            
+
 			if (forecastResults == null)
 			{
 				errorMessage = "Weather data not found for the specified location.";
@@ -85,5 +116,15 @@
 		{
 			errorMessage = $"Error while fetching weather data: {ex.Message}";
 		}
+	}
+
+	private string DateLocaleString(string src)
+	{
+		CultureInfo srcCult = new CultureInfo("en-US");
+		CultureInfo dstCult = new CultureInfo("cs-CZ");
+
+		DateTime parsed = DateTime.Parse(src, srcCult);
+
+		return parsed.ToString("d", dstCult);
 	}
 }
