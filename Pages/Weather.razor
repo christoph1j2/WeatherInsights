@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 
 
-<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/"))" />
+<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo(""))" />
 @if (isLoading)
 {
 	<MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="mt-16" Style="display:block;margin:auto" />
