@@ -111,7 +111,9 @@
 
 		if (!isCompareMode)
 		{
-			NavigationManager.NavigateTo($"weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}");
+			// Construct the URL combining BaseUri and the query params
+			string url = new Uri(new Uri(NavigationManager.BaseUri), $"weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}").ToString();
+			NavigationManager.NavigateTo(url);
 		}
 		else
 		{
@@ -151,7 +153,10 @@
 
 		// build the query params for the selected cities (2-3)
 		string query = $"cities={cities}&countries={countries}&regions={regions}&lats={lats}&lons={lons}";
-		NavigationManager.NavigateTo($"compare?{query}");
+		
+		// Use the BaseUri to resolve relative paths
+		string url = new Uri(new Uri(NavigationManager.BaseUri), $"compare?{query}").ToString();
+		NavigationManager.NavigateTo(url);
 	}
 
 	/// <summary>
