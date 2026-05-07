@@ -111,7 +111,7 @@
 
 		if (!isCompareMode)
 		{
-			NavigationManager.NavigateTo($"/weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}");
+			NavigationManager.NavigateTo($"weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}");
 		}
 		else
 		{
@@ -151,7 +151,7 @@
 
 		// build the query params for the selected cities (2-3)
 		string query = $"cities={cities}&countries={countries}&regions={regions}&lats={lats}&lons={lons}";
-		NavigationManager.NavigateTo($"/compare?{query}");
+		NavigationManager.NavigateTo($"compare?{query}");
 	}
 
 	/// <summary>
