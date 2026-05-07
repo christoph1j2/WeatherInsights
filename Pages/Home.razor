@@ -28,7 +28,7 @@
 			@ref="autocompleteRef"
 
 			SearchFunc="@HandleGeoSearchAsync"
-			ToStringFunc="@(r => r == null ? null : $"{r.Name} - {r.Country}")"
+			ToStringFunc="@(r => r == null ? null : $"{r.Name} - {r.Country}, {r.Region}")"
 
 			ValueChanged="@HandleRoute"
 			/>
