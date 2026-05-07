@@ -37,7 +37,7 @@ else if (forecastResults?.ForecastCurrent != null && forecastResults?.ForecastDa
 				<strong>Humidity:</strong> @forecastResults.ForecastCurrent.Humidity %
 			</MudText>
 			<MudText Typo="Typo.body2">
-				<strong>Wind Speed:</strong> @forecastResults.ForecastCurrent.WindSpeed m/s
+				<strong>Wind Speed:</strong> @forecastResults.ForecastCurrent.WindSpeed km/h
 			</MudText>
 			<MudText Typo="Typo.overline">
 				<strong>Last Update:</strong> @DateLocaleString(forecastResults.ForecastCurrent.Date)
