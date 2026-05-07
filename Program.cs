@@ -21,6 +21,7 @@ builder.Services.AddHttpClient("WeatherClient", client =>
     client.BaseAddress = new Uri("https://api.open-meteo.com/");
 });
 
+// Singletons, so that the cache can survive through NavigationManager events
 builder.Services.AddSingleton<GeocodingService>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();

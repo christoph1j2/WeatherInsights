@@ -13,6 +13,11 @@ namespace LeuzeWeather.Services
 
     public class ComfortServiceCurrent
     {
+        /// <summary>
+        /// Computes the comfort level from the COMFORT_LEVEL enum from current forecast.
+        /// </summary>
+        /// <param name="forecastResultCurrent"></param>
+        /// <returns>Respective Comfort Level</returns>
         public COMFORT_LEVEL ComputeForCurrent(ForecastResultCurrent forecastResultCurrent)
         {
             double Temperature = forecastResultCurrent.Temp;
@@ -40,6 +45,12 @@ namespace LeuzeWeather.Services
             else if (score >= 3) return COMFORT_LEVEL.Moderate;
             else return COMFORT_LEVEL.Bad;
         }
+
+        /// <summary>
+        /// Gets the comfort score for the current forecast.
+        /// </summary>
+        /// <param name="forecast"></param>
+        /// <returns>Integer representing the comfort level.</returns>
         public static int GetScore(ForecastResultCurrent forecast)
         {
             double Temperature = forecast.Temp;
@@ -82,9 +93,14 @@ namespace LeuzeWeather.Services
 
     public class ComfortServiceForecast
     {
+        /// <summary>
+        /// Computes the comfort level from the COMFORT_LEVEL enum from a date specified by dayIndex in the forecastResults.
+        /// </summary>
+        /// <param name="forecastResultDaily">ForecastResults</param>
+        /// <param name="dayIndex">Index for a specific day from the results.</param>
+        /// <returns>Comfort level</returns>
         public COMFORT_LEVEL ComputeForForecast(ForecastResultDaily forecastResultDaily, int dayIndex)
         {
-            //Console.WriteLine($"dayIndex={dayIndex}, arrLen={forecastResultDaily.TempMaxArr?.Length}");
             double MaxTemperature = forecastResultDaily.TempMaxArr?[dayIndex] ?? 1;
             double MinTemperature = forecastResultDaily.TempMinArr?[dayIndex] ?? 1;
             double AvgTemperature = (MaxTemperature + MinTemperature) / 2;

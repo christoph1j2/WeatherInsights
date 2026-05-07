@@ -66,12 +66,21 @@
             { 99, "🌪️" }  // Thunderstorm with heavy hail
         };
 
-
+        /// <summary>
+        /// Gets the value from the _descriptions dictionary.
+        /// </summary>
+        /// <param name="code">Weather code from API</param>
+        /// <returns>Weather Description</returns>
         public static string GetDescription(int code)
         {
             return _descriptions.TryGetValue(code, out string? desc) ? desc : "Unknown";
         }
 
+        /// <summary>
+        /// Gets the value from the _icons dictionary.
+        /// </summary>
+        /// <param name="code">Weather code from API</param>
+        /// <returns>Weather Icon</returns>
         public static string GetIcon(int code)
         {
             return _icons.TryGetValue(code, out string? icon) ? icon : "❓";
