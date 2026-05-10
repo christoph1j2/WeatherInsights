@@ -30,16 +30,24 @@ namespace LeuzeWeather.Services
         public async Task<List<GeocodingResult>?> GetCityAsync(string name)
         {
             GeocodingResultWrapper? wrapper;
-
-            if (_cache.ContainsKey(name))
+            string key = name.ToLower(); // case-insensitive caching
+            if (_cache.ContainsKey(key))
             {
-                wrapper = _cache.GetValueOrDefault(name);
+                wrapper = _cache.GetValueOrDefault(key);
             } 
             else 
             {
-                string url = $"v1/search?name={name}&count=5";
-                wrapper = await _api.GetFromJsonAsync<GeocodingResultWrapper>(url);
-                if (wrapper != null) _cache.Add(name, wrapper);
+                try
+                {
+                    string url = $"v1/search?name={key}&count=5";
+                    wrapper = await _api.GetFromJsonAsync<GeocodingResultWrapper>(url);
+                    if (wrapper != null) _cache.Add(key, wrapper);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine($"Error fetching city data: {ex.Message}");
+                    return null;
+                }
             }
 
             if (wrapper != null && wrapper.Results != null && wrapper.Results.Count > 0)

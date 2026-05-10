@@ -13,33 +13,30 @@ namespace LeuzeWeather.Services
 
     public class ComfortServiceCurrent
     {
+        private const int MIN_COMFORTABLE_TEMP = 15;
+        private const int MAX_COMFORTABLE_TEMP = 28;
+        private const int MIN_IDEAL_TEMP = 18;
+        private const int MAX_IDEAL_TEMP = 25;
+
+        private const int MAX_COMFORTABLE_HUMIDITY = 80;
+        private const int MAX_IDEAL_HUMIDITY = 60;
+
+        private const int MAX_COMFORTABLE_WIND_SPEED = 40;
+        private const int MAX_IDEAL_WIND_SPEED = 20;
+
+        private const int MAX_COMFORTABLE_WEATHER_CODE = 50;
+        private const int MAX_IDEAL_WEATHER_CODE = 3;
+
+
         /// <summary>
         /// Computes the comfort level from the COMFORT_LEVEL enum from current forecast.
         /// </summary>
         /// <param name="forecastResultCurrent"></param>
         /// <returns>Respective Comfort Level</returns>
+        /// 
         public COMFORT_LEVEL ComputeForCurrent(ForecastResultCurrent forecastResultCurrent)
         {
-            double Temperature = forecastResultCurrent.Temp;
-            double Humidity = forecastResultCurrent.Humidity;
-            double WindSpeed = forecastResultCurrent.WindSpeed;
-            int WeatherCode = forecastResultCurrent.WeatherCode;
-            int score = 0;
-
-            if (15 <= Temperature && Temperature <= 28)
-            {
-                if (18 <= Temperature && Temperature <= 25) score += 2;
-                else score += 1;
-            }
-
-            if (Humidity < 60) score += 2;
-            else if (Humidity < 80) score += 1;
-
-            if (WindSpeed < 20) score += 2;
-            else if (WindSpeed < 40) score += 1;
-
-            if (WeatherCode < 3) score += 2;
-            else if (WeatherCode < 50) score += 1;
+            int score = GetScore(forecastResultCurrent);
 
             if (score >= 6) return COMFORT_LEVEL.Good;
             else if (score >= 3) return COMFORT_LEVEL.Moderate;
@@ -59,20 +56,20 @@ namespace LeuzeWeather.Services
             int WeatherCode = forecast.WeatherCode;
             int score = 0;
 
-            if (15 <= Temperature && Temperature <= 28)
+            if (MIN_COMFORTABLE_TEMP <= Temperature && Temperature <= MAX_COMFORTABLE_TEMP)
             {
-                if (18 <= Temperature && Temperature <= 25) score += 2;
+                if (MIN_IDEAL_TEMP <= Temperature && Temperature <= MAX_IDEAL_TEMP) score += 2;
                 else score += 1;
             }
 
-            if (Humidity < 60) score += 2;
-            else if (Humidity < 80) score += 1;
+            if (Humidity < MAX_IDEAL_HUMIDITY) score += 2;
+            else if (Humidity < MAX_COMFORTABLE_HUMIDITY) score += 1;
 
-            if (WindSpeed < 20) score += 2;
-            else if (WindSpeed < 40) score += 1;
+            if (WindSpeed < MAX_IDEAL_WIND_SPEED) score += 2;
+            else if (WindSpeed < MAX_COMFORTABLE_WIND_SPEED) score += 1;
 
-            if (WeatherCode < 3) score += 2;
-            else if (WeatherCode < 50) score += 1;
+            if (WeatherCode < MAX_IDEAL_WEATHER_CODE) score += 2;
+            else if (WeatherCode < MAX_COMFORTABLE_WEATHER_CODE) score += 1;
 
             return score;
         }

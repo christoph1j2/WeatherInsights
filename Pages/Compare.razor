@@ -3,11 +3,19 @@
 @inject ComfortServiceCurrent ComfortServiceCurrent
 @inject NavigationManager NavigationManager
 
-
 <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Default" OnClick="@(() => NavigationManager.NavigateTo(""))" />
 
-
 <h3 style="text-align:center" class="mb-15">Compare</h3>
+
+@if (errorMessages.Any())
+{
+	<div class="d-flex flex-column mx-10 mb-4 gap-2">
+		@foreach (var error in errorMessages)
+		{
+			<MudAlert Severity="Severity.Error" Variant="Variant.Filled">@error</MudAlert>
+		}
+	</div>
+}
 
 @if (isLoading)
 {
@@ -15,13 +23,13 @@
 }
 else if (weatherData != null)
 {
-	<div style="display:flex; justify-content: space-around">
+	<div style="display:flex; justify-content: center; flex-wrap: wrap; gap: 2rem;">
 		@foreach (var c in weatherData)
 		{
 			bool isBest = bestScore == ComfortServiceCurrent.GetScore(c.Current);
 			// Current weather
 
-			<MudPaper Class="border-1 pa-4 mx-10 mb-20" Style="width:25vw;">
+			<MudPaper Class="border-1 pa-4 mb-10" Style="width: 320px;">
 				<MudStack Spacing="2">
 					<MudText Typo="Typo.h5">
 						@c.CityName, @c.Region, @c.Country
@@ -57,6 +65,12 @@ else if (weatherData != null)
 	}
 	</div>
 }
+else
+{
+	<MudPaper>
+		<MudText>Error fetching data! Try refreshing the page.</MudText>
+	</MudPaper>
+}
 
 
 @code {
@@ -70,6 +84,7 @@ else if (weatherData != null)
 
 	private int bestScore = 0;
 	private bool isLoading = true;
+	private List<string> errorMessages = new();
 
 	/// <summary>
 	/// Gets the weather data for each city passed as query parameters and computes the comfort score to determine the best weather among them.
@@ -79,7 +94,7 @@ else if (weatherData != null)
 	{
 		try
 		{
-			if (Cities?.Length > 0 && Latitudes?.Length > 0 && Longitudes?.Length > 0 && Countries?.Length > 0 && Regions?.Length>0)
+			if (Cities != null && Latitudes != null && Longitudes != null && Countries != null && Regions != null && Cities.Length == Latitudes.Length && Cities.Length == Longitudes.Length && Cities.Length == Countries.Length && Cities.Length == Regions.Length)
 			{
 				for (int i = 0; i < Cities.Length; i++)
 				{
@@ -98,12 +113,17 @@ else if (weatherData != null)
 						int score = ComfortServiceCurrent.GetScore(weather.ForecastCurrent);
 						if (score > bestScore) bestScore = score;
 					}
+					else
+					{
+						errorMessages.Add($"Weather data could not be found for {Cities[i]}.");
+					}
 
 				}
 			}
 		}
 		catch (Exception ex)
 		{
+			errorMessages.Add($"Critical error fetching weather data: {ex.Message}");
 			Console.WriteLine($"Error fetching weather data: {ex.Message}");
 		}
 		finally

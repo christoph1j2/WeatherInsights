@@ -33,7 +33,7 @@ namespace LeuzeWeather.Services
         public async Task<ForecastResultWrapper?> GetWeatherAsync(double lat, double lon, string? name, string? country, string? region)
         {
             ForecastResultWrapper? wrapper = null;
-            string? key = $"{name},{country},{region}";
+            string? key = $"{name},{country},{region}".ToLowerInvariant();
 
             // dbug
             //Console.WriteLine($"Cache keys: {string.Join(", ", _cache.Keys)}");
@@ -43,7 +43,7 @@ namespace LeuzeWeather.Services
             {
                 (ForecastResultWrapper Data, DateTime CachedAt) entry = _cache.GetValueOrDefault(key);
                 // TTL for cache is 15 minutes, if the data is older than that, remove from cache and fetch new 
-                if (entry.Data != null && (DateTime.Now - entry.CachedAt).TotalMinutes < 15) 
+                if (entry.Data != null && (DateTime.UtcNow - entry.CachedAt).TotalMinutes < 15) 
                 {
                     wrapper = entry.Data;
                 }
@@ -56,9 +56,17 @@ namespace LeuzeWeather.Services
 
             if (!_cache.ContainsKey(key))
             {
-                string url = $"v1/forecast?latitude={lat.ToString(System.Globalization.CultureInfo.InvariantCulture)}&longitude={lon.ToString(System.Globalization.CultureInfo.InvariantCulture)}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
-                wrapper = await _api.GetFromJsonAsync<ForecastResultWrapper>(url);
-                if (wrapper != null) _cache.Add(key, (wrapper,(DateTime.Now)));
+                try
+                {
+                    string url = $"v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
+                    wrapper = await _api.GetFromJsonAsync<ForecastResultWrapper>(url);
+                    if (wrapper != null) _cache.Add(key, (wrapper, (DateTime.UtcNow)));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error fetching weather data: {ex.Message}");
+                    return null;
+                }
             }
 
             if (wrapper != null
