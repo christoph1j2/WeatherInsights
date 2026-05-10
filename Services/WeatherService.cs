@@ -58,7 +58,10 @@ namespace LeuzeWeather.Services
             {
                 try
                 {
-                    string url = $"v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
+                    string latStr = lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    string lonStr = lon.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                    string url = $"v1/forecast?latitude={latStr}&longitude={lonStr}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=4";
                     wrapper = await _api.GetFromJsonAsync<ForecastResultWrapper>(url);
                     if (wrapper != null) _cache.Add(key, (wrapper, (DateTime.UtcNow)));
                 }
