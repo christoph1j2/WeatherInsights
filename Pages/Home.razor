@@ -111,8 +111,11 @@
 
 		if (!isCompareMode)
 		{
-			// Construct the URL combining BaseUri and the query params
-			string url = new Uri(new Uri(NavigationManager.BaseUri), $"weather?lat={selectedCity.Latitude}&lon={selectedCity.Longitude}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}").ToString();
+			// Construct the URL combining BaseUri and the query params using InvariantCulture for lat/lon
+			string latStr = selectedCity.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			string lonStr = selectedCity.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+			
+			string url = new Uri(new Uri(NavigationManager.BaseUri), $"weather?lat={latStr}&lon={lonStr}&city={selectedCity.Name}&country={selectedCity.Country}&region={selectedCity.Region}").ToString();
 			NavigationManager.NavigateTo(url);
 		}
 		else
@@ -148,13 +151,14 @@
 		string? cities = string.Join("&cities=", citiesForCompare.Select(c => c.Name));
 		string? countries = string.Join("&countries=", citiesForCompare.Select(c => c.Country));
 		string? regions = string.Join("&regions=", citiesForCompare.Select(c => c.Region));
-		string? lats = string.Join("&lats=", citiesForCompare.Select(c => c.Latitude));
-		string? lons = string.Join("&lons=", citiesForCompare.Select(c => c.Longitude));
+		
+		// Force format lat/lon to InvariantCulture dots so URL parses identically across all browsers OS language packs
+		string? lats = string.Join("&lats=", citiesForCompare.Select(c => c.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+		string? lons = string.Join("&lons=", citiesForCompare.Select(c => c.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
 		// build the query params for the selected cities (2-3)
 		string query = $"cities={cities}&countries={countries}&regions={regions}&lats={lats}&lons={lons}";
 		
-		// Use the BaseUri to resolve relative paths
 		string url = new Uri(new Uri(NavigationManager.BaseUri), $"compare?{query}").ToString();
 		NavigationManager.NavigateTo(url);
 	}
